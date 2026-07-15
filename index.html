@@ -1491,24 +1491,24 @@ function slideHTML(p){
           </div>
         </div>
         <div class="slide-block grow">
-          <div class="sec-label">${escapeHtml(L('proximoPasso'))}</div>
-          <div class="text-block">${p.proximoPasso?markInferred(p.proximoPasso, p.proximoPassoSource==="derived"):'<span style="color:var(--text-lo);">N/I</span>'}</div>
-        </div>
-      </div>
-      <div class="slide-col">
-        <div class="slide-block grow">
-          <div class="sec-label">${escapeHtml(L('riscos'))}</div>
-          ${p.riscos.length ? `<div class="risk-panel">${p.riscos.map(r=>`<div class="risk-item"><i style="background:${severityColor(r.severity)}"></i><span>${escapeHtml(r.text)}</span></div>`).join("")}</div>` : `<div class="risk-panel ok">✓ Nenhum risco crítico.</div>`}
-        </div>
-      </div>
-      <div class="slide-col">
-        <div class="slide-block grow">
           <div class="sec-label">${escapeHtml(L('executado'))}</div>
           ${p.executado.length ? p.executado.map(i=>`<div class="list-item"><span class="li-icon">${i.icon||"•"}</span><span style="flex:1;">${escapeHtml(i.text)}</span>${i.when?`<span class="li-when">${escapeHtml(i.when)}</span>`:""}</div>`).join("") : '<div style="color:var(--text-lo);font-size:11px;">Nenhuma atividade registrada.</div>'}
         </div>
+      </div>
+      <div class="slide-col">
+        <div class="slide-block grow">
+          <div class="sec-label">${escapeHtml(L('marcos'))}</div>
+          ${p.marcos.length ? p.marcos.map(m=>`<div class="milestone"><span class="m-icon">${m.icon||"•"}</span><span class="m-text">${escapeHtml(m.text)}</span>${m.when?`<span class="m-when">${escapeHtml(m.when)}</span>`:""}</div>`).join("") : '<div style="color:var(--text-lo);font-size:11px;">Sem marcos registrados.</div>'}
+        </div>
+      </div>
+      <div class="slide-col">
         <div class="slide-block grow">
           <div class="sec-label">${escapeHtml(L('proximasEntregas'))}</div>
           ${p.proximas.length ? p.proximas.map(i=>`<div class="list-item"><span class="li-icon">${i.icon||"•"}</span><span style="flex:1;">${escapeHtml(i.text)}</span>${i.when?`<span class="li-when">${escapeHtml(i.when)}</span>`:""}</div>`).join("") : '<div style="color:var(--text-lo);font-size:11px;">Nenhuma entrega prevista registrada.</div>'}
+        </div>
+        <div class="slide-block grow">
+          <div class="sec-label">${escapeHtml(L('riscos'))}</div>
+          ${p.riscos.length ? `<div class="risk-panel">${p.riscos.map(r=>`<div class="risk-item"><i style="background:${severityColor(r.severity)}"></i><span>${escapeHtml(r.text)}</span></div>`).join("")}</div>` : `<div class="risk-panel ok">✓ Nenhum risco crítico.</div>`}
         </div>
       </div>
     </div>
