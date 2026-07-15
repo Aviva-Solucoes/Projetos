@@ -333,7 +333,7 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
 .compare-row{display:flex;align-items:center;gap:10px;font-size:11.5px;margin-bottom:10px;}
 .compare-row .cr-label{width:150px;flex:none;color:var(--text-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .compare-row .cr-track{flex:1;height:11px;background:var(--bg-soft);border-radius:6px;position:relative;overflow:hidden;}
-.compare-row .cr-fill{height:100%;border-radius:6px;background:var(--teal);}
+.compare-row .cr-fill{display:block;height:100%;border-radius:6px;background:var(--teal);transition:width .5s ease;}
 .compare-row .cr-planned{position:absolute;top:-2px;width:2px;height:15px;background:var(--amber);}
 
 /* ================= modal ================= */
@@ -602,11 +602,25 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
       </section>
 
       <section class="view" data-view="capacidade">
+        <div class="filter-bar">
+          <select id="fCapCoordenacao"><option value="">Coordenação: todas</option></select>
+          <select id="fCapArea"><option value="">Área: todas</option></select>
+          <select id="fCapStatus"><option value="">Status: todos</option></select>
+          <span class="filter-count" id="fCapCount"></span>
+        </div>
         <div class="cap-grid" id="capGrid"></div>
       </section>
 
       <section class="view" data-view="gerentes">
         <div class="group-grid" id="gerenteGrid"></div>
+      </section>
+
+      <section class="view" data-view="liderTecnico">
+        <div class="group-grid" id="liderTecnicoGrid"></div>
+      </section>
+
+      <section class="view" data-view="coordenacao">
+        <div class="group-grid" id="coordenacaoGrid"></div>
       </section>
 
       <section class="view" data-view="pmo">
@@ -627,16 +641,21 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
       </section>
 
       <section class="view" data-view="riscos">
+        <div class="kpi-row" id="riskKpiRow"></div>
+        <div class="section-title">Riscos por projeto</div>
         <div class="filter-bar">
+          <input type="text" id="fRiskSearch" placeholder="Buscar risco ou projeto…">
           <select id="fSeverity">
             <option value="">Severidade: todas</option>
             <option value="alta">🔴 Alta</option>
             <option value="media">🟠 Média</option>
             <option value="baixa">🟡 Baixa</option>
           </select>
+          <select id="fRiskArea"><option value="">Área: todas</option></select>
+          <select id="fRiskGerente"><option value="">Gerente: todos</option></select>
           <span class="filter-count" id="riskCount"></span>
         </div>
-        <div class="risk-list" id="fullRiskList" style="max-height:none;"></div>
+        <div class="group-grid" id="riskProjectGrid"></div>
       </section>
 
       <section class="view" data-view="apresentacao">
@@ -721,6 +740,8 @@ const TABS = [
   {id:"projetos", label:"Projetos", icon:"projects", subtitle:"Todos os projetos ativos — clique em um card para abrir o one page completo"},
   {id:"capacidade", label:"Capacidade dos Analistas", icon:"capacity", subtitle:"Alocação estimada por analista, com base na capacidade máxima configurada"},
   {id:"gerentes", label:"Visão por Gerente", icon:"manager", subtitle:"Projetos agrupados pelo gerente responsável"},
+  {id:"liderTecnico", label:"Visão por Líder Técnico", icon:"person", subtitle:"Projetos agrupados pelo líder técnico responsável"},
+  {id:"coordenacao", label:"Visão por Gerência/Coordenação", icon:"users", subtitle:"Projetos agrupados pela gerência/coordenação responsável"},
   {id:"pmo", label:"Visão por PMO", icon:"pmo", subtitle:"Projetos agrupados pelo analista de PMO responsável"},
   {id:"indicadores", label:"Indicadores", icon:"indicators", subtitle:"Visão gráfica do portfólio para leitura rápida"},
   {id:"riscos", label:"Riscos & Pontos de Atenção", icon:"risks", subtitle:"Riscos reportados no portfólio, por severidade"},
@@ -975,7 +996,7 @@ function buildProject(row){
 
   const allGovernanceText = [row["Sponsor"], row["Líder Técnico"], row["Gerente do Projeto"], row["Orçado"], row["Realizado"]].filter(Boolean).join(" | ");
   const govPeople = people(allGovernanceText);
-  const analistasHeur = [...new Set(govPeople.flatMap(n => CONFIG.TEAM_ROSTER.filter(fn => norm(n).startsWith(norm(fn)))))];
+  const analistasHeur = [...new Set(govPeople.filter(n => CONFIG.TEAM_ROSTER.some(fn => norm(n).startsWith(norm(fn)))))];
 
   const tier = col(row, ["Tier","Nível","Nivel"]);
   const pmoCol = col(row, ["PMO do Projeto","PMO"]);
@@ -1235,7 +1256,7 @@ document.getElementById("globalSearch").addEventListener("input", (e)=>{
    ============================================================ */
 function renderAll(){
   renderHome(); renderProjetosFilters(); renderProjetos(); renderCapacidade();
-  renderGerentes(); renderPmo(); renderIndicadores(); renderRiscos();
+  renderGerentes(); renderLiderTecnico(); renderCoordenacao(); renderPmo(); renderIndicadores(); renderRiscos();
   buildPresentationSelect();
   if(state.view==="apresentacao") renderPresentation();
 }
@@ -1349,16 +1370,52 @@ function renderProjetos(){
 }
 
 function capBucket(allocPct){ if(allocPct>90) return {cls:"red", label:"Sobrecarga"}; if(allocPct>70) return {cls:"amber", label:"Atenção"}; return {cls:"green", label:"Saudável"}; }
+// Agrupa variações do mesmo analista (ex.: "Wallace" vindo de adivinhação e "Wallace Silva"
+// vindo da coluna Analista Direto) como a mesma pessoa, usando o nome mais completo pra exibir.
+function analystGroupKey(name){
+  const hit = CONFIG.TEAM_ROSTER.find(fn => norm(name).startsWith(norm(fn)));
+  return hit ? norm(hit) : norm(name);
+}
+function groupAnalystProjects(P){
+  const groups = new Map();
+  P.forEach(p=>{
+    p.analistas.forEach(name=>{
+      const key = analystGroupKey(name);
+      if(!groups.has(key)) groups.set(key, {display:name, projects:new Set()});
+      const g = groups.get(key);
+      if(name.length > g.display.length) g.display = name;
+      g.projects.add(p);
+    });
+  });
+  return [...groups.values()].map(g=>({display:g.display, projects:[...g.projects]}));
+}
 function renderCapacidade(){
-  const P = state.projects;
-  const cards = CONFIG.TEAM_ROSTER.map(fn=>{
-    const projs = P.filter(p=> p.analistas.includes(fn));
+  const P0 = state.projects;
+  const selCoord = document.getElementById("fCapCoordenacao");
+  const selArea = document.getElementById("fCapArea");
+  const selStatus = document.getElementById("fCapStatus");
+  if(selCoord && !selCoord.dataset.filled){
+    selCoord.innerHTML = `<option value="">Coordenação: todas</option>` + uniqueSorted(P0.flatMap(p=>p.coordenacao)).map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    selArea.innerHTML = `<option value="">Área: todas</option>` + uniqueSorted(P0.map(p=>p.area)).map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    selStatus.innerHTML = `<option value="">Status: todos</option>` + uniqueSorted(P0.map(p=>p.status)).map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    [selCoord,selArea,selStatus].forEach(el=>{ el.dataset.filled="1"; el.addEventListener("change", renderCapacidade); });
+  }
+  const fCoord = selCoord ? selCoord.value : "", fArea = selArea ? selArea.value : "", fStatus = selStatus ? selStatus.value : "";
+  const P = P0.filter(p=>{
+    if(fCoord && !p.coordenacao.includes(fCoord)) return false;
+    if(fArea && p.area!==fArea) return false;
+    if(fStatus && p.status!==fStatus) return false;
+    return true;
+  });
+  if(document.getElementById("fCapCount")) document.getElementById("fCapCount").textContent = P.length + " de " + P0.length + " projetos considerados";
+  const groups = groupAnalystProjects(P).sort((a,b)=> b.projects.length - a.projects.length || a.display.localeCompare(b.display,'pt-BR'));
+  const cards = groups.map(({display, projects: projs})=>{
     const alloc = Math.round(Math.min(100, projs.length/CONFIG.MAX_PROJECTS_PER_ANALYST*100));
     const cb = capBucket(alloc);
     const criticos = projs.filter(p=>p.bucket==="critico").length, atencao = projs.filter(p=>p.bucket==="atencao").length;
     return `
     <div class="cap-card">
-      <div class="cap-head"><div style="display:flex;align-items:center;gap:9px;">${avatarHTML(fn,26)}<h4>${escapeHtml(fn)}</h4></div><span class="cap-alloc-num" style="color:var(--${cb.cls==='red'?'red':cb.cls==='amber'?'amber':'green'})">${alloc}%</span></div>
+      <div class="cap-head"><div style="display:flex;align-items:center;gap:9px;">${avatarHTML(display,26)}<h4>${escapeHtml(display)}</h4></div><span class="cap-alloc-num" style="color:var(--${cb.cls==='red'?'red':cb.cls==='amber'?'amber':'green'})">${alloc}%</span></div>
       <div class="cap-load">${projs.length} projeto${projs.length!==1?"s":""} · capacidade máx. considerada: ${CONFIG.MAX_PROJECTS_PER_ANALYST}</div>
       <div class="cap-bar"><i style="width:${alloc}%;background:var(--${cb.cls==='red'?'red':cb.cls==='amber'?'amber':'green'})"></i></div>
       <div class="cap-sub-badges"><span class="badge ${cb.cls}">${cb.label}</span>${criticos?`<span class="badge red">${criticos} crítico${criticos!==1?"s":""}</span>`:""}${atencao?`<span class="badge amber">${atencao} atenção</span>`:""}</div>
@@ -1366,7 +1423,7 @@ function renderCapacidade(){
     </div>`;
   }).join("");
   const unassigned = P.filter(p=> p.analistas.length===0).length;
-  document.getElementById("capGrid").innerHTML = cards + (unassigned ? `<div class="cap-card"><div class="cap-head"><h4>Sem analista identificado</h4><span class="badge gray">${unassigned}</span></div><div class="cap-load">Projetos cujo campo de governança não citou nenhum analista do time.</div></div>` : "");
+  document.getElementById("capGrid").innerHTML = (cards || `<div class="empty-state">Nenhum analista identificado ainda na coluna Analista Direto.</div>`) + (unassigned ? `<div class="cap-card"><div class="cap-head"><h4>Sem analista identificado</h4><span class="badge gray">${unassigned}</span></div><div class="cap-load">Projetos cujo campo Analista Direto ainda não foi preenchido.</div></div>` : "");
 }
 
 function renderGroupedView(elId, groupFn){
@@ -1391,6 +1448,8 @@ function renderGroupedView(elId, groupFn){
   }).join("");
 }
 function renderGerentes(){ renderGroupedView("gerenteGrid", p=> p.gerente.length?p.gerente:[]); }
+function renderLiderTecnico(){ renderGroupedView("liderTecnicoGrid", p=> p.liderTecnico.length?p.liderTecnico:[]); }
+function renderCoordenacao(){ renderGroupedView("coordenacaoGrid", p=> p.coordenacao.length?p.coordenacao:[]); }
 function renderPmo(){ renderGroupedView("pmoGrid", p=> p.pmo.length?p.pmo:[]); }
 
 function renderBarChart(elId, map, colorVar){
@@ -1415,29 +1474,80 @@ function renderIndicadores(){
     <div class="compare-row"><span class="cr-label" title="${escapeHtml(p.nome)}">${escapeHtml(p.nome)}</span><span class="cr-track"><span class="cr-fill" style="width:${Math.round(p.evolPct*100)}%"></span>${p.plannedPct!=null?`<span class="cr-planned" style="left:${Math.round(p.plannedPct*100)}%"></span>`:""}</span><span style="width:80px;text-align:right;color:var(--text-hi);font-weight:700;">${Math.round(p.evolPct*100)}%${p.plannedPct!=null?" / "+Math.round(p.plannedPct*100)+"%":""}</span></div>`).join("")
     : `<div style="color:var(--text-lo);font-size:12px;">Sem dados suficientes.</div>`;
 
-  const capMap = new Map();
-  CONFIG.TEAM_ROSTER.forEach(fn=>{ const n = P.filter(p=>p.analistas.includes(fn)).length; capMap.set(fn, Math.round(Math.min(100, n/CONFIG.MAX_PROJECTS_PER_ANALYST*100))); });
-  document.getElementById("chartCapacidade").innerHTML = [...capMap.entries()].map(([fn,alloc])=>{
+  const capGroups = groupAnalystProjects(P);
+  document.getElementById("chartCapacidade").innerHTML = capGroups.length ? capGroups.map(({display,projects:projs})=>{
+    const alloc = Math.round(Math.min(100, projs.length/CONFIG.MAX_PROJECTS_PER_ANALYST*100));
     const cb = capBucket(alloc);
-    return `<div class="bar-row"><span class="br-label">${escapeHtml(fn)}</span><span class="br-track"><span class="br-fill" style="width:${alloc}%;background:var(--${cb.cls==='red'?'red':cb.cls==='amber'?'amber':'green'})"></span></span><span class="br-val">${alloc}%</span></div>`;
-  }).join("");
+    return `<div class="bar-row"><span class="br-label">${escapeHtml(display)}</span><span class="br-track"><span class="br-fill" style="width:${alloc}%;background:var(--${cb.cls==='red'?'red':cb.cls==='amber'?'amber':'green'})"></span></span><span class="br-val">${alloc}%</span></div>`;
+  }).join("") : `<div style="color:var(--text-lo);font-size:12px;">Nenhum analista identificado ainda.</div>`;
 }
 
 function renderRiscos(){
-  document.getElementById("fSeverity").onchange = renderRiscosList;
+  const P = state.projects;
+  const selArea = document.getElementById("fRiskArea"), selGerente = document.getElementById("fRiskGerente");
+  if(selArea && !selArea.dataset.filled){
+    selArea.innerHTML = `<option value="">Área: todas</option>` + uniqueSorted(P.map(p=>p.area)).map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    selGerente.innerHTML = `<option value="">Gerente: todos</option>` + uniqueSorted(P.flatMap(p=>p.gerente)).map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    selArea.dataset.filled = "1";
+    ["fSeverity","fRiskArea","fRiskGerente","fRiskSearch"].forEach(id=> document.getElementById(id).addEventListener("input", renderRiscosList));
+  }
+
+  const allRisks = [];
+  P.forEach(p=> p.riscos.forEach(r=> allRisks.push(r)));
+  const counts = {alta:0, media:0, baixa:0};
+  allRisks.forEach(r=>{ if(counts[r.severity]!=null) counts[r.severity]++; });
+  document.getElementById("riskKpiRow").innerHTML = `
+    <div class="kpi-card blue"><div class="kc-top"><div class="kc-icon">${icon("risks")}</div></div><div class="num">${allRisks.length}</div><div class="lbl">Riscos reportados</div></div>
+    <div class="kpi-card red"><div class="kc-top"><div class="kc-icon">${icon("alertCircle")}</div></div><div class="num">${counts.alta}</div><div class="lbl">Severidade alta</div></div>
+    <div class="kpi-card amber"><div class="kc-top"><div class="kc-icon">${icon("alertCircle")}</div></div><div class="num">${counts.media}</div><div class="lbl">Severidade média</div></div>
+    <div class="kpi-card gray"><div class="kc-top"><div class="kc-icon">${icon("alertCircle")}</div></div><div class="num">${counts.baixa}</div><div class="lbl">Severidade baixa</div></div>
+  `;
   renderRiscosList();
 }
 function renderRiscosList(){
+  const P = state.projects;
   const sev = document.getElementById("fSeverity").value;
-  const all = [];
-  state.projects.forEach(p=>{ p.riscos.forEach(r=> all.push({...r, project:p})); });
-  let list = all;
-  if(sev) list = list.filter(r=>r.severity===sev);
-  list = list.sort((a,b)=> ({alta:0,media:1,baixa:2,info:3}[a.severity]) - ({alta:0,media:1,baixa:2,info:3}[b.severity]));
-  document.getElementById("riskCount").textContent = list.length + " itens";
-  document.getElementById("fullRiskList").innerHTML = list.length ? list.map(r=>`
-    <div class="risk-row" onclick="openModal('${r.project.id}')"><span class="risk-dot" style="background:${severityColor(r.severity)}"></span><div><div class="rtext">${escapeHtml(r.text)}</div><div class="rproj">${escapeHtml(r.project.id)} · ${escapeHtml(r.project.nome)}</div></div></div>`).join("")
-    : `<div class="empty-state">Nenhum risco reportado para esse filtro.</div>`;
+  const fArea = document.getElementById("fRiskArea").value;
+  const fGerente = document.getElementById("fRiskGerente").value;
+  const q = norm(document.getElementById("fRiskSearch").value);
+
+  let projectsWithRisks = P.filter(p=>{
+    if(!p.riscos.length) return false;
+    if(fArea && p.area!==fArea) return false;
+    if(fGerente && !p.gerente.includes(fGerente)) return false;
+    return true;
+  }).map(p=>{
+    let riscos = p.riscos;
+    if(sev) riscos = riscos.filter(r=>r.severity===sev);
+    if(q) riscos = riscos.filter(r=> norm(r.text).includes(q) || norm(p.nome).includes(q));
+    return {p, riscos};
+  }).filter(x=> x.riscos.length>0);
+
+  const sevRank = {alta:0, media:1, baixa:2, info:3};
+  projectsWithRisks.sort((a,b)=>{
+    const aMin = Math.min(...a.riscos.map(r=>sevRank[r.severity]??3));
+    const bMin = Math.min(...b.riscos.map(r=>sevRank[r.severity]??3));
+    return aMin-bMin || b.riscos.length-a.riscos.length;
+  });
+
+  const totalItens = projectsWithRisks.reduce((s,x)=>s+x.riscos.length,0);
+  document.getElementById("riskCount").textContent = totalItens + " riscos em " + projectsWithRisks.length + " projeto" + (projectsWithRisks.length!==1?"s":"");
+  document.getElementById("riskProjectGrid").innerHTML = projectsWithRisks.length ? projectsWithRisks.map(({p,riscos})=>{
+    const sevCounts = {alta:0,media:0,baixa:0};
+    riscos.forEach(r=>{ if(sevCounts[r.severity]!=null) sevCounts[r.severity]++; });
+    return `
+    <div class="group-card">
+      <div class="gc-head">
+        <div style="min-width:0;">
+          <h4 style="cursor:pointer;" onclick="openModal('${p.id}')">${escapeHtml(p.nome)}</h4>
+          <div class="pc-area" style="margin-top:2px;">${escapeHtml(p.id)}${p.area?" · "+escapeHtml(p.area):""}</div>
+        </div>
+        <span class="badge ${p.statusMeta.color}">${escapeHtml(p.statusMeta.label)}</span>
+      </div>
+      <div class="gc-status-row">${sevCounts.alta?`<span class="badge red">🔴 ${sevCounts.alta}</span>`:""}${sevCounts.media?`<span class="badge amber">🟠 ${sevCounts.media}</span>`:""}${sevCounts.baixa?`<span class="badge gray">🟡 ${sevCounts.baixa}</span>`:""}</div>
+      <div class="risk-panel" style="margin-top:2px;">${riscos.map(r=>`<div class="risk-item"><i style="background:${severityColor(r.severity)}"></i><span>${escapeHtml(r.text)}</span></div>`).join("")}</div>
+    </div>`;
+  }).join("") : `<div class="empty-state"><div class="es-icon">✓</div>Nenhum risco encontrado para esse filtro.</div>`;
 }
 
 /* ============================================================
