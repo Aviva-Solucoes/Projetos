@@ -290,9 +290,12 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
 .pc-next b{color:var(--teal-600);display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
 .proj-card .pc-prog{margin-top:auto;}
 .proj-card .pc-prog-top{display:flex;justify-content:space-between;font-size:11px;color:var(--text-md);margin-bottom:5px;font-weight:600;}
-.proj-card .pc-bar{height:6px;border-radius:4px;background:var(--bg-soft);overflow:hidden;position:relative;}
-.proj-card .pc-bar i{display:block;height:100%;}
+.proj-card .pc-bar-wrap{position:relative;padding-bottom:13px;}
+.proj-card .pc-bar{height:6px;border-radius:4px;background:var(--bg-soft);overflow:visible;position:relative;}
+.proj-card .pc-bar i{display:block;height:100%;border-radius:4px;}
 .proj-card .pc-bar .planned-tick{position:absolute;top:-2px;width:2px;height:10px;background:var(--text-md);}
+.proj-card .pc-bar-wrap .planned-pct{position:absolute;top:9px;transform:translateX(-50%);font-size:8.5px;font-weight:700;color:var(--text-lo);white-space:nowrap;}
+.pc-updated{font-size:9px;color:var(--text-lo);text-align:right;margin-top:-3px;}
 
 /* ================= tabelas de agrupamento ================= */
 .group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
@@ -321,6 +324,30 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
 
 /* ================= indicadores ================= */
 .chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+
+/* ---- Resumo Financeiro ---- */
+.fin-donut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.donut-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:center;padding:6px 0;}
+.donut-wrap{position:relative;width:150px;height:150px;flex:none;}
+.donut{width:100%;height:100%;border-radius:50%;}
+.donut-hole{position:absolute;inset:24px;background:var(--bg-card);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--border);text-align:center;padding:4px;}
+.donut-value{font-family:var(--font-main);font-weight:800;font-size:14px;color:var(--text-hi);line-height:1.15;}
+.donut-label{font-size:9px;color:var(--text-lo);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;min-width:140px;}
+.donut-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-md);}
+.donut-legend-item i{width:9px;height:9px;border-radius:3px;flex:none;}
+.donut-legend-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.donut-legend-item b{color:var(--text-hi);font-weight:700;}
+.fin-table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:auto;box-shadow:var(--shadow-sm);}
+.fin-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.fin-table th{text-align:left;padding:11px 14px;background:var(--bg-soft);color:var(--text-lo);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+.fin-table td{padding:11px 14px;border-bottom:1px solid var(--border-soft, var(--border));color:var(--text-hi);white-space:nowrap;}
+.fin-table tr:last-child td{border-bottom:none;}
+.fin-table tbody tr{cursor:pointer;transition:background .12s;}
+.fin-table tbody tr:hover{background:var(--bg-soft);}
+.fin-table td.fin-name{white-space:normal;font-weight:600;min-width:200px;}
+.fin-table td.fin-num{text-align:right;font-family:var(--font-main);}
+.fin-overspend-tag{color:var(--red);font-weight:700;}
 .chart-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm);transition:box-shadow .18s;}
 .chart-panel:hover{box-shadow:var(--shadow-md);}
 .chart-panel h3{font-size:13px;margin-bottom:14px;}
@@ -357,6 +384,8 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
 .evol-bar .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);animation:shimmer 2.4s infinite;}
 @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 .evol-bar .planned-mark{position:absolute;top:-3px;width:2px;height:17px;background:var(--text-md);}
+.evol-bar .planned-pct{position:absolute;top:-19px;transform:translateX(-50%);font-size:10.5px;font-weight:700;color:var(--text-lo);white-space:nowrap;}
+.sh-bar-wrap .planned-pct{top:-15px;font-size:9px;}
 .evol-planned-lbl{font-size:11px;color:var(--text-lo);margin-top:6px;display:flex;align-items:center;gap:6px;}
 .evol-planned-lbl i{width:8px;height:8px;background:var(--text-md);display:inline-block;}
 .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
@@ -449,16 +478,23 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
 .slide-stage{width:100%;aspect-ratio:16/9;background:var(--bg-card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg);position:relative;}
 .slide-stage::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad-accent);z-index:2;}
 .slide-stage:fullscreen{border-radius:0;aspect-ratio:auto;background:#fff;}
-.slide-inner{height:100%;width:100%;display:flex;flex-direction:column;padding:22px 28px;gap:12px;overflow:hidden;}
+.slide-inner{height:100%;width:100%;display:flex;flex-direction:column;padding:22px 28px;gap:12px;overflow:hidden;position:relative;}
+.slide-updated{position:absolute;right:14px;bottom:6px;font-size:8.5px;color:var(--text-lo);opacity:.75;z-index:4;}
 .slide-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:1px solid var(--border);padding-bottom:12px;flex:none;}
 .slide-header .sh-id{font-size:11px;color:var(--teal-600);letter-spacing:.09em;font-weight:700;}
 .slide-header h2{font-size:clamp(16px,1.9vw,23px);margin-top:3px;}
 .slide-header .sh-obj{font-size:clamp(10px,.95vw,12px);color:var(--text-md);margin-top:5px;max-width:640px;font-style:italic;line-height:1.4;}
+.slide-header .sh-dates{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;justify-content:flex-end;}
 .slide-header .sh-badges{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
 .slide-header .sh-right{text-align:right;flex:none;}
 .slide-header .sh-evol{font-family:var(--font-main);font-size:clamp(20px,2.3vw,28px);font-weight:700;color:var(--teal);}
 .slide-header .sh-evol-lbl{font-size:9.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
-.sh-bar-wrap{width:170px;margin-top:7px;}
+.sh-bar-wrap{width:170px;margin-top:15px;}
+.sh-fin{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.sh-stat-chip{display:inline-flex;align-items:baseline;gap:4px;border-radius:7px;padding:4px 9px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+.sh-stat-chip .sh-stat-lbl{font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;font-weight:700;opacity:.75;}
+.sh-stat-chip.fin{background:var(--teal-50);color:var(--teal-600);}
+.sh-stat-chip.date{background:var(--blue-50);color:#1D4ED8;}
 .sh-bar-wrap .evol-bar{height:8px;}
 .sh-bar-wrap .planned-mark{height:13px;top:-2.5px;}
 .slide-body{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
@@ -640,6 +676,27 @@ main.content{padding:26px 30px 50px;max-width:1560px;}
         </div>
       </section>
 
+      <section class="view" data-view="financeiro">
+        <div class="kpi-row" id="finKpiRow"></div>
+        <div class="section-title">Distribuição do orçamento</div>
+        <div class="fin-donut-grid">
+          <div class="chart-panel"><h3>CAPEX vs. OPEX</h3><div id="donutCapexOpex"></div></div>
+          <div class="chart-panel"><h3>Orçado por área</h3><div id="donutArea"></div></div>
+        </div>
+        <div class="section-title">Maiores orçamentos</div>
+        <div class="chart-panel"><div class="bar-chart" id="chartTopBudget"></div></div>
+        <div class="section-title">Acima do orçado <small style="color:var(--text-lo);font-weight:500;">realizado maior que o orçado, só quando os dois estão disponíveis</small></div>
+        <div class="risk-list" id="finOverspend" style="max-height:none;"></div>
+        <div class="section-title">Detalhamento por projeto</div>
+        <div class="filter-bar">
+          <input type="text" id="fFinSearch" placeholder="Buscar projeto…">
+          <select id="fFinArea"><option value="">Área: todas</option></select>
+          <span class="filter-count" id="finCount"></span>
+        </div>
+        <div class="fin-table-wrap"><table class="fin-table" id="finTable"></table></div>
+        <div class="footer-note" style="text-align:left;margin-top:14px;">Valores estimados a partir do texto informado nas colunas CAPEX, OPEX e Valor Realizado da planilha — não substitui o controle contábil oficial.</div>
+      </section>
+
       <section class="view" data-view="riscos">
         <div class="kpi-row" id="riskKpiRow"></div>
         <div class="section-title">Riscos por projeto</div>
@@ -705,6 +762,7 @@ const ICONS = {
   next: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   person: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/>',
   check: '<path d="M20 6L9 17l-5-5"/>',
+  money: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.3c0-1.3 1.1-2.3 2.5-2.3s2.5 .8 2.5 2c0 2.3-5 1.7-5 4 0 1.2 1.1 2 2.5 2s2.5-1 2.5-2.3"/>',
 };
 function icon(name){ return '<svg class="icon" viewBox="0 0 24 24">'+(ICONS[name]||'')+'</svg>'; }
 
@@ -729,6 +787,7 @@ const CONFIG = {
   PMO_ROSTER: ["Fernando Dadamos", "Geovanna Nogueira"],
   MAX_PROJECTS_PER_ANALYST: 6,
   CACHE_KEY: "portfolio_ti_csv_cache_v1",
+  PROJECT_LOG_KEY: "portfolio_ti_project_changes_v1",
   // Planilha à parte, só com Nome + Foto (link de imagem). Usada pra mostrar avatares nas
   // pessoas mencionadas no portfólio — opcional: se falhar ou não tiver a pessoa, cai no
   // ícone genérico automaticamente.
@@ -743,6 +802,7 @@ const TABS = [
   {id:"liderTecnico", label:"Visão por Líder Técnico", icon:"person", subtitle:"Projetos agrupados pelo líder técnico responsável"},
   {id:"coordenacao", label:"Visão por Gerência/Coordenação", icon:"users", subtitle:"Projetos agrupados pela gerência/coordenação responsável"},
   {id:"pmo", label:"Visão por PMO", icon:"pmo", subtitle:"Projetos agrupados pelo analista de PMO responsável"},
+  {id:"financeiro", label:"Resumo Financeiro", icon:"money", subtitle:"Visão consolidada de CAPEX, OPEX e execução orçamentária"},
   {id:"indicadores", label:"Indicadores", icon:"indicators", subtitle:"Visão gráfica do portfólio para leitura rápida"},
   {id:"riscos", label:"Riscos & Pontos de Atenção", icon:"risks", subtitle:"Riscos reportados no portfólio, por severidade"},
   {id:"apresentacao", label:"Modo Apresentação", icon:"presentation", subtitle:"Layout de slide para reuniões de status — navegue entre projetos"},
@@ -794,6 +854,73 @@ function cleanMoney(v){
   let matches = s.match(/(R\$\s?[\d.,]+\s?(MM|Mi|mil|K)?|[\d.,]+\s?(MM|Mi|mil|K)\b|CapEx[^;|]*|Opex[^;|]*)/gi);
   if(matches && matches.length) return matches.map(x=>x.trim()).join(" + ");
   return /\d/.test(s) ? s : "N/I";
+}
+// Extrai o valor numérico em milhões (MM) de um texto financeiro, somando todas as menções
+// encontradas na célula (útil quando um campo tem mais de um valor, ex. "R$0,5MM + R$1,8MM").
+// É uma estimativa best-effort a partir de texto livre — não uma conta contábil exata.
+function extractMoneyMM(v){
+  if(isBlank(v)) return 0;
+  const s = String(v);
+  const re = /(?:R\$\s?)?([\d]+(?:[.,]\d+)?)\s*(MM|Mi|mil|K|M)\b|R\$\s?([\d]+(?:[.,]\d+)?)/gi;
+  let total = 0, m;
+  while((m = re.exec(s)) !== null){
+    let numStr = m[1]!==undefined ? m[1] : m[3];
+    let unit = m[2];
+    let n = parseFloat(String(numStr).replace(",","."));
+    if(isNaN(n)) continue;
+    const u = (unit||"").toLowerCase();
+    if(u==="k"||u==="mil") n = n/1000;
+    total += n;
+  }
+  return total;
+}
+// Formata datas pro padrão brasileiro (DD/MM/AAAA), sem horário — aceita ISO (2025-01-29,
+// com ou sem hora) e já formatado em BR. Faz parsing por texto (sem usar Date) pra nunca
+// sofrer deslocamento de fuso horário.
+function formatDateBR(v){
+  if(isBlank(v)) return null;
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return `${m[3].padStart(2,"0")}/${m[2].padStart(2,"0")}/${m[1]}`;
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return `${m[1].padStart(2,"0")}/${m[2].padStart(2,"0")}/${m[3]}`;
+  return s;
+}
+// Rótulo discreto de "última atualização" — usa a coluna dedicada quando existir, senão cai
+// no horário da última sincronização bem-sucedida com a planilha.
+function lastUpdatedLabel(p){
+  if(p.ultimaAtualizacao) return formatDateBR(p.ultimaAtualizacao);
+  if(p.localLastChanged){
+    const d = new Date(p.localLastChanged);
+    if(!isNaN(d.getTime())) return d.toLocaleDateString("pt-BR") + " às " + d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  }
+  if(state.lastUpdated) return state.lastUpdated.toLocaleDateString("pt-BR") + " às " + state.lastUpdated.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  return null;
+}
+function formatMM(n){
+  if(n==null || isNaN(n) || n<=0) return "N/I";
+  if(n<1) return "R$ " + Math.round(n*1000).toLocaleString("pt-BR") + "K";
+  return "R$ " + n.toLocaleString("pt-BR", {minimumFractionDigits: n<10?1:0, maximumFractionDigits: n<10?1:0}) + "MM";
+}
+// Gráfico de rosca (donut) simples em CSS puro (conic-gradient), sem depender de biblioteca externa.
+function donutChartHTML(segments, centerLabel, centerValue){
+  const total = segments.reduce((s,x)=>s+x.value,0);
+  if(total<=0) return `<div class="empty-state" style="padding:26px 10px;">Sem dados suficientes ainda.</div>`;
+  let acc = 0;
+  const stops = segments.map(s=>{
+    const pct = s.value/total*100;
+    const start = acc; acc += pct;
+    return `${s.color} ${start.toFixed(2)}% ${acc.toFixed(2)}%`;
+  }).join(", ");
+  const legend = segments.map(s=>`<div class="donut-legend-item"><i style="background:${s.color}"></i><span title="${escapeHtml(s.label)}">${escapeHtml(s.label)}</span><b>${Math.round(s.value/total*100)}%</b></div>`).join("");
+  return `
+    <div class="donut-row">
+      <div class="donut-wrap">
+        <div class="donut" style="background:conic-gradient(${stops});"></div>
+        <div class="donut-hole"><div class="donut-value">${escapeHtml(centerValue)}</div><div class="donut-label">${escapeHtml(centerLabel)}</div></div>
+      </div>
+      <div class="donut-legend">${legend}</div>
+    </div>`;
 }
 const ICON_BULLETS = ["✅","🔄","⚪️","⚪","🎯","🔴","🟠","🟡","❌","⏳","·","•"];
 function stripIcon(text){
@@ -1090,13 +1217,37 @@ function showStale(ts, isSeed){
 }
 function showManualPaste(show){ document.getElementById("manualPaste").classList.toggle("hidden", !show); }
 
+// Compara o conteúdo de cada linha com a última versão salva no navegador — só atualiza
+// o "carimbo" de data daquele projeto se algo nele realmente mudou desde a última vez.
+// Projetos sem alteração mantêm a data antiga; projetos novos ou nunca vistos ganham a
+// data de agora (funcionando como base inicial na primeira vez que essa planilha é lida).
+function loadProjectLog(){
+  try{ return JSON.parse(localStorage.getItem(CONFIG.PROJECT_LOG_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveProjectLog(log){ try{ localStorage.setItem(CONFIG.PROJECT_LOG_KEY, JSON.stringify(log)); }catch(e){} }
+function trackProjectChanges(rows){
+  const log = loadProjectLog();
+  const now = new Date().toISOString();
+  let dirty = false;
+  rows.forEach(row=>{
+    const id = row["ID"];
+    if(!id) return;
+    const fp = JSON.stringify(row);
+    if(!log[id] || log[id].fp !== fp){ log[id] = {fp, ts: now}; dirty = true; }
+  });
+  if(dirty) saveProjectLog(log);
+  return log;
+}
 function processRows(rows){
   const seen = new Set();
   const projects = [];
+  const changeLog = trackProjectChanges(rows);
   rows.forEach(row=>{
     if(!row["ID"] || seen.has(row["ID"])) return;
     seen.add(row["ID"]);
-    projects.push(buildProject(row));
+    const proj = buildProject(row);
+    proj.localLastChanged = changeLog[proj.id] ? changeLog[proj.id].ts : null;
+    projects.push(proj);
   });
   if(rows.length) state.labels = computeLabels(Object.keys(rows[0]));
   return projects;
@@ -1256,7 +1407,7 @@ document.getElementById("globalSearch").addEventListener("input", (e)=>{
    ============================================================ */
 function renderAll(){
   renderHome(); renderProjetosFilters(); renderProjetos(); renderCapacidade();
-  renderGerentes(); renderLiderTecnico(); renderCoordenacao(); renderPmo(); renderIndicadores(); renderRiscos();
+  renderGerentes(); renderLiderTecnico(); renderCoordenacao(); renderPmo(); renderIndicadores(); renderRiscos(); renderFinanceiro();
   buildPresentationSelect();
   if(state.view==="apresentacao") renderPresentation();
 }
@@ -1364,8 +1515,12 @@ function renderProjetos(){
       ${p.proximoPasso?`<div class="pc-next"><b>${escapeHtml(L('proximoPasso'))}</b>${markInferred(p.proximoPasso, p.proximoPassoSource==="derived")}</div>`:""}
       <div class="pc-prog">
         <div class="pc-prog-top"><span>Evolução ${p.evolPct!=null?Math.round(p.evolPct*100)+"%":"N/I"}</span><span>Planejado ${p.plannedPct!=null?Math.round(p.plannedPct*100)+"%":"N/I"}</span></div>
-        <div class="pc-bar"><i style="width:${Math.round((p.evolPct??0)*100)}%;background:var(--${p.statusMeta.color})"></i>${p.plannedPct!=null?`<span class="planned-tick" style="left:${Math.round(p.plannedPct*100)}%"></span>`:""}</div>
+        <div class="pc-bar-wrap">
+          <div class="pc-bar"><i style="width:${Math.round((p.evolPct??0)*100)}%;background:var(--${p.statusMeta.color})"></i>${p.plannedPct!=null?`<span class="planned-tick" style="left:${Math.round(p.plannedPct*100)}%"></span>`:""}</div>
+          ${p.plannedPct!=null?`<span class="planned-pct" style="left:${Math.round(p.plannedPct*100)}%">${Math.round(p.plannedPct*100)}%</span>`:""}
+        </div>
       </div>
+      ${lastUpdatedLabel(p)?`<div class="pc-updated">Última atualização: ${escapeHtml(lastUpdatedLabel(p))}</div>`:""}
     </div>`).join("") : `<div class="empty-state">${icon("search")}<div>Nenhum projeto encontrado com esses filtros.</div></div>`;
 }
 
@@ -1482,6 +1637,79 @@ function renderIndicadores(){
   }).join("") : `<div style="color:var(--text-lo);font-size:12px;">Nenhum analista identificado ainda.</div>`;
 }
 
+function renderFinanceiro(){
+  const P = state.projects;
+  const finData = P.map(p=>({
+    p, capex: extractMoneyMM(p.capex), opex: extractMoneyMM(p.opex), realizado: extractMoneyMM(p.realizado),
+  }));
+  const totalCapex = finData.reduce((s,x)=>s+x.capex,0);
+  const totalOpex = finData.reduce((s,x)=>s+x.opex,0);
+  const totalOrcado = totalCapex+totalOpex;
+  const totalRealizado = finData.reduce((s,x)=>s+x.realizado,0);
+  const comOrcado = finData.filter(x=>x.capex>0||x.opex>0).length;
+  const semOrcado = P.length - comOrcado;
+
+  document.getElementById("finKpiRow").innerHTML = `
+    <div class="kpi-card teal"><div class="kc-top"><div class="kc-icon">${icon("money")}</div></div><div class="num">${formatMM(totalCapex)}</div><div class="lbl">CAPEX orçado (estimado)</div></div>
+    <div class="kpi-card blue"><div class="kc-top"><div class="kc-icon">${icon("money")}</div></div><div class="num">${formatMM(totalOpex)}</div><div class="lbl">OPEX orçado (estimado)</div></div>
+    <div class="kpi-card green"><div class="kc-top"><div class="kc-icon">${icon("trend")}</div></div><div class="num">${formatMM(totalOrcado)}</div><div class="lbl">Orçado total (CAPEX+OPEX)</div></div>
+    <div class="kpi-card amber"><div class="kc-top"><div class="kc-icon">${icon("check")}</div></div><div class="num">${formatMM(totalRealizado)}</div><div class="lbl">Realizado identificado</div></div>
+    <div class="kpi-card gray"><div class="kc-top"><div class="kc-icon">${icon("alertCircle")}</div></div><div class="num">${semOrcado}</div><div class="lbl">Projetos sem valor financeiro</div></div>
+  `;
+
+  document.getElementById("donutCapexOpex").innerHTML = donutChartHTML(
+    [{label:"CAPEX", value:totalCapex, color:"var(--teal)"}, {label:"OPEX", value:totalOpex, color:"var(--blue)"}],
+    "Orçado total", formatMM(totalOrcado)
+  );
+
+  const areaColors = ["var(--teal)","var(--blue)","var(--purple)","var(--amber)","var(--green)","var(--red)","var(--gray)"];
+  const areaMap = new Map();
+  finData.forEach(({p,capex,opex})=>{ const a = p.area || "Sem área"; areaMap.set(a, (areaMap.get(a)||0)+capex+opex); });
+  const areaSegments = [...areaMap.entries()].filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,7).map(([label,value],i)=>({label,value,color:areaColors[i%areaColors.length]}));
+  document.getElementById("donutArea").innerHTML = donutChartHTML(areaSegments, "Orçado", formatMM(totalOrcado));
+
+  const top = finData.filter(x=>x.capex+x.opex>0).sort((a,b)=>(b.capex+b.opex)-(a.capex+a.opex)).slice(0,10);
+  const maxVal = Math.max(1, ...top.map(x=>x.capex+x.opex));
+  document.getElementById("chartTopBudget").innerHTML = top.length ? top.map(x=>`
+    <div class="bar-row" style="cursor:pointer;" onclick="openModal('${x.p.id}')"><span class="br-label" title="${escapeHtml(x.p.nome)}">${escapeHtml(x.p.nome)}</span><span class="br-track"><span class="br-fill" style="width:${Math.round((x.capex+x.opex)/maxVal*100)}%;background:var(--teal)"></span></span><span class="br-val" style="width:64px;">${formatMM(x.capex+x.opex)}</span></div>
+  `).join("") : `<div class="empty-state">Sem dados financeiros suficientes ainda.</div>`;
+
+  const overspend = finData.filter(x=> x.realizado>0 && (x.capex+x.opex)>0 && x.realizado > (x.capex+x.opex));
+  document.getElementById("finOverspend").innerHTML = overspend.length ? overspend.map(x=>`
+    <div class="risk-row" onclick="openModal('${x.p.id}')"><span class="risk-dot" style="background:var(--red)"></span><div><div class="rtext"><span class="fin-overspend-tag">${formatMM(x.realizado)} realizado</span> vs. ${formatMM(x.capex+x.opex)} orçado</div><div class="rproj">${escapeHtml(x.p.id)} · ${escapeHtml(x.p.nome)}</div></div></div>
+  `).join("") : `<div class="empty-state" style="padding:20px;">✓ Nenhum projeto identificado acima do orçado (com base nos dados disponíveis).</div>`;
+
+  const selArea = document.getElementById("fFinArea");
+  if(selArea && !selArea.dataset.filled){
+    selArea.innerHTML = `<option value="">Área: todas</option>` + uniqueSorted(P.map(p=>p.area)).map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    selArea.dataset.filled = "1";
+    ["fFinSearch","fFinArea"].forEach(id=> document.getElementById(id).addEventListener("input", renderFinanceiroTable));
+  }
+  renderFinanceiroTable();
+}
+function renderFinanceiroTable(){
+  const P = state.projects;
+  const q = norm(document.getElementById("fFinSearch").value);
+  const fArea = document.getElementById("fFinArea").value;
+  let list = P.filter(p=>{
+    if(fArea && p.area!==fArea) return false;
+    if(q && !norm(p.nome+" "+p.id).includes(q)) return false;
+    return true;
+  });
+  document.getElementById("finCount").textContent = list.length + " de " + P.length + " projetos";
+  document.getElementById("finTable").innerHTML = `
+    <thead><tr><th>Projeto</th><th>Área</th><th>Status</th><th>CAPEX</th><th>OPEX</th><th>Realizado</th></tr></thead>
+    <tbody>${list.map(p=>`
+      <tr onclick="openModal('${p.id}')">
+        <td class="fin-name">${escapeHtml(p.nome)}</td>
+        <td>${p.area?escapeHtml(p.area):"—"}</td>
+        <td><span class="badge ${p.statusMeta.color} sm">${escapeHtml(p.statusMeta.label)}</span></td>
+        <td class="fin-num">${p.capex?escapeHtml(p.capex):"N/I"}</td>
+        <td class="fin-num">${p.opex?escapeHtml(p.opex):"N/I"}</td>
+        <td class="fin-num">${escapeHtml(p.realizado)}</td>
+      </tr>`).join("")}</tbody>
+  `;
+}
 function renderRiscos(){
   const P = state.projects;
   const selArea = document.getElementById("fRiskArea"), selGerente = document.getElementById("fRiskGerente");
@@ -1570,7 +1798,7 @@ function projectDetailHTML(p){
       ${p.resumoExecutivo?`<div><div class="sec-label">Resumo executivo</div><div class="text-block">${escapeHtml(p.resumoExecutivo)}</div></div>`:""}
       <div>
         <div class="evol-wrap"><span class="sec-label" style="margin:0;">% de evolução</span><span class="num" style="color:var(--${p.statusMeta.color})">${evolLabel}</span></div>
-        <div class="evol-bar"><div class="fill" style="width:${Math.round((p.evolPct??0)*100)}%"></div>${plannedLabel?`<div class="planned-mark" style="left:${Math.round((p.plannedPct??0)*100)}%"></div>`:""}</div>
+        <div class="evol-bar"><div class="fill" style="width:${Math.round((p.evolPct??0)*100)}%"></div>${plannedLabel?`<div class="planned-mark" style="left:${Math.round((p.plannedPct??0)*100)}%"></div><div class="planned-pct" style="left:${Math.round((p.plannedPct??0)*100)}%">${Math.round((p.plannedPct??0)*100)}%</div>`:""}</div>
         ${plannedLabel?`<div class="evol-planned-lbl"><i></i>Planejado: ${plannedLabel}</div>`:""}
       </div>
       <div>
@@ -1595,9 +1823,9 @@ function projectDetailHTML(p){
       <div>
         <div class="sec-label">Cronograma macro</div>
         <div class="info-grid">
-          <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('dataInicio'))}</div><div class="ic-val">${p.dataInicio?escapeHtml(p.dataInicio):"N/I"}</div></div>
-          <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('fimPrevisto'))}</div><div class="ic-val">${p.fimPrevisto?escapeHtml(p.fimPrevisto):"N/I"}</div></div>
-          <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('fimRealizado'))}</div><div class="ic-val">${p.fimRealizado?escapeHtml(p.fimRealizado):"N/I"}</div></div>
+          <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('dataInicio'))}</div><div class="ic-val">${p.dataInicio?escapeHtml(formatDateBR(p.dataInicio)):"N/I"}</div></div>
+          <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('fimPrevisto'))}</div><div class="ic-val">${p.fimPrevisto?escapeHtml(formatDateBR(p.fimPrevisto)):"N/I"}</div></div>
+          <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('fimRealizado'))}</div><div class="ic-val">${p.fimRealizado?escapeHtml(formatDateBR(p.fimRealizado)):"N/I"}</div></div>
         </div>
       </div>
       ${p.marcos.length?`<div><div class="sec-label">${escapeHtml(L('marcos'))}</div><div class="timeline-block">${p.marcos.map(m=>`<div class="milestone"><span class="m-icon">${m.icon||"•"}</span><span class="m-text">${escapeHtml(m.text)}</span>${m.when?`<span class="m-when">${escapeHtml(m.when)}</span>`:""}</div>`).join("")}</div></div>`:""}
@@ -1613,7 +1841,7 @@ function projectDetailHTML(p){
         <div class="sec-label">Linha do tempo</div>
         ${horizontalTimelineHTML(p.marcos, p.currentMarco)}
       </div>
-      <div style="color:var(--text-lo);font-size:11px;">Última atualização do projeto: ${p.ultimaAtualizacao?escapeHtml(p.ultimaAtualizacao):(state.lastUpdated?state.lastUpdated.toLocaleString("pt-BR"):"N/I")}${anyInferred?' &nbsp;·&nbsp; <span class="infer-mark">**</span> Informação preenchida pela IA':""}</div>
+      <div style="color:var(--text-lo);font-size:11px;">Última atualização do projeto: ${lastUpdatedLabel(p)?escapeHtml(lastUpdatedLabel(p)):"N/I"}${anyInferred?' &nbsp;·&nbsp; <span class="infer-mark">**</span> Informação preenchida pela IA':""}</div>
     </div>
   `;
 }
@@ -1648,8 +1876,10 @@ function slideHTML(p){
         <h2>${escapeHtml(p.nome)}</h2>
         ${p.faseAtual?`<div class="sh-obj">${escapeHtml(L('faseAtual'))}: ${markInferred(p.faseAtual.text + (p.faseAtual.when?" · "+p.faseAtual.when:""), p.faseAtualSource==="derived")}</div>`:""}
         ${p.coordenacao.length?`<div class="sh-obj">${escapeHtml(L('coordenacao'))}: ${escapeHtml(p.coordenacao.join(", "))}</div>`:""}
+        <div class="sh-fin">${p.capex?`<span class="sh-stat-chip fin"><span class="sh-stat-lbl">${escapeHtml(L('capex'))}</span>${escapeHtml(p.capex)}</span>`:""}${p.opex?`<span class="sh-stat-chip fin"><span class="sh-stat-lbl">${escapeHtml(L('opex'))}</span>${escapeHtml(p.opex)}</span>`:""}${!p.capex&&!p.opex?`<span class="sh-stat-chip fin"><span class="sh-stat-lbl">CAPEX/OPEX</span>N/I</span>`:""}</div>
         <div class="sh-badges">
           <span class="badge ${p.statusMeta.color}">${escapeHtml(p.statusMeta.label)}</span>
+          ${p.pmo.length?`<span class="tier-chip">${escapeHtml(L('pmo'))}: ${escapeHtml(p.pmo.join(", "))}</span>`:""}
           ${p.tier?`<span class="tier-chip">${escapeHtml(p.tier)}</span>`:""}
           ${p.atrasado?`<span class="delay-flag">▼ atrasado</span>`:""}
         </div>
@@ -1657,7 +1887,8 @@ function slideHTML(p){
       <div class="sh-right">
         <div class="sh-evol">${evolLabel}</div>
         <div class="sh-evol-lbl">Evolução${p.plannedPct!=null?" · plan. "+Math.round(p.plannedPct*100)+"%":""}</div>
-        <div class="sh-bar-wrap"><div class="evol-bar"><div class="fill" style="width:${Math.round((p.evolPct??0)*100)}%"></div>${p.plannedPct!=null?`<div class="planned-mark" style="left:${Math.round(p.plannedPct*100)}%"></div>`:""}</div></div>
+        <div class="sh-bar-wrap"><div class="evol-bar"><div class="fill" style="width:${Math.round((p.evolPct??0)*100)}%"></div>${p.plannedPct!=null?`<div class="planned-mark" style="left:${Math.round(p.plannedPct*100)}%"></div><div class="planned-pct" style="left:${Math.round(p.plannedPct*100)}%">${Math.round(p.plannedPct*100)}%</div>`:""}</div></div>
+        ${(p.dataInicio||p.fimPrevisto||p.fimRealizado)?`<div class="sh-dates">${p.dataInicio?`<span class="sh-stat-chip date"><span class="sh-stat-lbl">${escapeHtml(L('dataInicio'))}</span>${escapeHtml(formatDateBR(p.dataInicio))}</span>`:""}${p.fimPrevisto?`<span class="sh-stat-chip date"><span class="sh-stat-lbl">${escapeHtml(L('fimPrevisto'))}</span>${escapeHtml(formatDateBR(p.fimPrevisto))}</span>`:""}${p.fimRealizado?`<span class="sh-stat-chip date"><span class="sh-stat-lbl">${escapeHtml(L('fimRealizado'))}</span>${escapeHtml(formatDateBR(p.fimRealizado))}</span>`:""}</div>`:""}
       </div>
     </div>
     <div class="slide-body">
@@ -1669,14 +1900,6 @@ function slideHTML(p){
             <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('gerente'))}</div><div class="ic-val">${peopleWithAvatarsHTML(p.gerente, 22)}</div></div>
             <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('liderTecnico'))}</div><div class="ic-val">${peopleWithAvatarsHTML(p.liderTecnico, 22)}</div></div>
             <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('analista'))}</div><div class="ic-val">${p.analistas.length?peopleWithAvatarsHTML(p.analistas, 22):"N/I"}${p.analistaSource==="heuristic"&&p.analistas.length?' <span class="infer-mark">**</span>':""}</div></div>
-            <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('pmo'))}</div><div class="ic-val">${p.pmo.length?peopleWithAvatarsHTML(p.pmo, 22):"N/I"}${p.pmoSource==="heuristic"&&p.pmo.length?' <span class="infer-mark">**</span>':""}</div></div>
-          </div>
-        </div>
-        <div class="slide-block">
-          <div class="sec-label">Financeiro</div>
-          <div class="info-grid">
-            <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('capex'))}</div><div class="ic-val">${p.capex?escapeHtml(p.capex):(p.orcado?escapeHtml(p.orcado):"N/I")}</div></div>
-            <div class="info-cell"><div class="ic-lbl">${escapeHtml(L('opex'))}</div><div class="ic-val">${p.opex?escapeHtml(p.opex):"N/I"}</div></div>
           </div>
         </div>
         <div class="slide-block grow">
@@ -1704,6 +1927,7 @@ function slideHTML(p){
     <div class="slide-timeline-strip">
       ${horizontalTimelineCompactHTML(p.marcos, p.currentMarco)}
     </div>
+    ${lastUpdatedLabel(p)?`<div class="slide-updated">Última atualização: ${escapeHtml(lastUpdatedLabel(p))}</div>`:""}
   `;
 }
 function renderPresentation(){
