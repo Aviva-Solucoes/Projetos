@@ -788,7 +788,7 @@ const SEED_DATA = [{"ID": "ECO-001", "Projeto": "Programa | Ecossistema de Fidel
 const CONFIG = {
   // Versionamento semântico (MAJOR.MINOR.PATCH) — ver CHANGELOG.md para o histórico completo.
   // Suba MAJOR em mudança estrutural grande, MINOR em funcionalidade nova, PATCH em ajuste/correção.
-  VERSION: "3.3.0",
+  VERSION: "3.3.1",
   BUILD_DATE: "2026-07-20",
   CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCXIeZtf9qqG0la-MFKkAvDEp0_8lrA_wczZOEvgXq6Ya_w8i1HwFzSnmOV7IAW2wmLezHVZ9_nxQ1/pub?output=csv",
   // Opcional, mas recomendado: URL de um Google Apps Script Web App (doGet) publicado a partir
@@ -797,7 +797,6 @@ const CONFIG = {
   // googleusercontent.com sem CORS, e por isso falha em alguns navegadores/redes). Deixe em
   // branco para usar apenas o CSV_URL acima com um proxy público de apoio.
   APPS_SCRIPT_URL: "",
-  REFRESH_MS: 2 * 60 * 1000,
   TEAM_ROSTER: ["Alímpio", "Antoniel", "João", "Pedro", "Victor", "Wallace"],
   PMO_ROSTER: ["Fernando Dadamos", "Geovanna Nogueira"],
   MAX_PROJECTS_PER_ANALYST: 6,
@@ -2055,7 +2054,8 @@ const initial = (location.hash||"#home").replace("#","");
 setView(TABS.some(t=>t.id===initial) ? initial : "home");
 loadData();
 loadPeoplePhotos();
-setInterval(loadData, CONFIG.REFRESH_MS);
+// Atualização automática por intervalo foi removida a pedido — agora só sincroniza ao abrir
+// a página e quando o usuário clica em "Atualizar agora" (mantém os dados atuais até lá).
 </script>
 </body>
 </html>
